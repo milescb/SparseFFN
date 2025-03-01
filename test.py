@@ -5,7 +5,7 @@ import torch
 
 from ffnsparse.architecture import DenseNN
 from ffnsparse.dataset import get_data_loaders
-from ffnsparse.plotting import compare_distributions
+from ffnsparse.plotting import compare_distributions, plot_multiple_histograms_with_ratio
 
 def evaluate(model, test_loader):
     model.eval()
@@ -45,14 +45,20 @@ def main():
     predictions, targets = evaluate(model, test_loader)
     
     compare_distributions(predictions[0], targets[0], save='plots/comparison_single_layer.png', xlim=(-0.25, 0.25))
+    plot_multiple_histograms_with_ratio([predictions[0], targets[0]], bins=25, range=(-0.25, 0.25),
+                                        xlabel='Value', ylabel='Frequency', labels=['Predictions', 'Targets'],
+                                        save='plots/comparison_single_layer_ratio.png', histtype='step')
     
     concat_predictions = np.concatenate(predictions, axis=0)
     concat_targets = np.concatenate(targets, axis=0)
     compare_distributions(concat_predictions, concat_targets, save='plots/comparison_all_layers.png', xlim=(-0.25, 0.25))
+    plot_multiple_histograms_with_ratio([concat_predictions, concat_targets], bins=25, range=(-0.25, 0.25),
+                                        xlabel='Value', ylabel='Frequency', labels=['Predictions', 'Targets'],
+                                        save='plots/comparison_all_layers_ratio.png', histtype='step')
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model-save-path', type=str, 
+    parser.add_argument('-mod', '--model-save-path', type=str, 
                         default="trained_models/model.pt", 
                         help='Path to saved model')
     parser.add_argument('--data', type=str, 

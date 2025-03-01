@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import argparse
 
@@ -11,9 +12,11 @@ from ffnsparse.plotting import plot_loss
 
 def train(batch_size=32, learning_rate=0.0001, nEpochs=75):
     
-    input_size = 4096
-    hidden_sizes = [1024, 512, 1024]
-    output_size = 14336
+    print(f"Training FFN model with batch size: {batch_size}, learning rate: {learning_rate}, epochs: {nEpochs}")
+    
+    input_size = 4_096
+    hidden_sizes = [1_024, 512, 1_024, 4_096, 10_000]
+    output_size = 14_336
     
     model = DenseNN(
         input_size=input_size,
@@ -82,11 +85,17 @@ def train(batch_size=32, learning_rate=0.0001, nEpochs=75):
         'input_size': input_size,
         'hidden_sizes': hidden_sizes,
         'output_size': output_size
-    }, "trained_models/model.pt")
-    plot_loss(train_loss, val_loss, save='plots/loss.png')
+    }, os.path.join(args.outdir, args.out_name+'.pt'))
+    plot_loss(train_loss, val_loss, 
+              save=os.path.join(args.outdir, args.out_name+'_loss.png'))
     
 def main():
-    train()
+    
+    learning_rate = float(args.learning_rate)
+    batch_size = int(args.batch_size)
+    nEpochs = int(args.nEpochs)
+    
+    train(learning_rate=learning_rate, batch_size=batch_size, nEpochs=nEpochs)
     
 if __name__=="__main__":
     
@@ -94,6 +103,11 @@ if __name__=="__main__":
     parser.add_argument('--data', type=str, 
                         default="/mnt/storage/spffn/training_data/processed_data_layer2.pt", 
                         help='Path to dataset')
+    parser.add_argument('-od', '--outdir', type=str, default="trained_models", help='Output directory')
+    parser.add_argument('-o', '--out-name', type=str, default="model", help='Path to save model')
+    parser.add_argument('-bs', '--batch_size', type=int, default=32, help='Batch size')
+    parser.add_argument('-lr', '--learning_rate', type=float, default=1e-3, help='Learning rate')
+    parser.add_argument('-e', '--nEpochs', type=int, default=20, help='Number of epochs')
     args = parser.parse_args()
     
     DATA = args.data
