@@ -1,0 +1,6 @@
+*.ipynb
+*.png
+*.pdf
+*.pt
+*pycache*
+*.venv/
