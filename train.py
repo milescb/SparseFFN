@@ -9,18 +9,18 @@ from ffnsparse.architecture import DenseNN
 from ffnsparse.dataset import get_data_loaders
 from ffnsparse.plotting import plot_loss
 
-def train(batch_size=64, learning_rate=0.001, nEpochs=10):
+def train(batch_size=32, learning_rate=0.0001, nEpochs=75):
     
-    # Set default tensor type to float16
-    torch.set_default_dtype(torch.float16)
+    input_size = 4096
+    hidden_sizes = [1024, 512, 1024]
+    output_size = 14336
     
-    # Define model
     model = DenseNN(
-        input_size=4096,
-        hidden_sizes=[1024, 512, 1024],
-        output_size=14336
+        input_size=input_size,
+        hidden_sizes=hidden_sizes,
+        output_size=output_size
     )
-    model = model.float()
+    model = model.float().to('cuda')
     
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -30,17 +30,14 @@ def train(batch_size=64, learning_rate=0.001, nEpochs=10):
     train_loss = []
     val_loss = []
     
-  # Train and validate in the same loop
     for epoch in range(nEpochs):
-        # Training phase
         model.train()
         epoch_train_loss = 0.0
         train_samples = 0
         
         for i, (inputs, targets) in enumerate(train_loader):
-            # Ensure inputs and targets are float32
-            inputs = inputs.float()
-            targets = targets.float()
+            inputs = inputs.float().to('cuda')
+            targets = targets.float().to('cuda')
             
             optimizer.zero_grad()
             
@@ -49,42 +46,42 @@ def train(batch_size=64, learning_rate=0.001, nEpochs=10):
             loss.backward()
             optimizer.step()
             
-            # Accumulate batch loss
             epoch_train_loss += loss.item() * inputs.size(0)
             train_samples += inputs.size(0)
         
-        # Calculate average training loss for the epoch
         avg_train_loss = epoch_train_loss / train_samples
         train_loss.append(avg_train_loss)
         
-        # Validation phase
         model.eval()
         epoch_val_loss = 0.0
         val_samples = 0
         
         with torch.no_grad():
             for inputs, targets in test_loader:
-                # Convert to float32
-                inputs = inputs.float()
-                targets = targets.float()
+                
+                inputs = inputs.float().to('cuda')
+                targets = targets.float().to('cuda')
                 
                 outputs = model(inputs)
                 loss = criterion(outputs, targets)
                 
-                # Accumulate batch loss
                 epoch_val_loss += loss.item() * inputs.size(0)
                 val_samples += inputs.size(0)
         
-        # Calculate average validation loss for the epoch
         avg_val_loss = epoch_val_loss / val_samples
         val_loss.append(avg_val_loss)
         
         print(f"Epoch: {epoch}/{nEpochs-1}, Train Loss: {avg_train_loss:.6f}, Val Loss: {avg_val_loss:.6f}")
     
-    # Save model with split indices
     torch.save({
         'model_state_dict': model.state_dict(),
-        'split_indices': split_indices
+        'split_indices': split_indices,
+        'batch_size': batch_size,
+        'learning_rate': learning_rate,
+        'nEpochs': nEpochs,
+        'input_size': input_size,
+        'hidden_sizes': hidden_sizes,
+        'output_size': output_size
     }, "trained_models/model.pt")
     plot_loss(train_loss, val_loss, save='plots/loss.png')
     

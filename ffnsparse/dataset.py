@@ -51,7 +51,7 @@ def training_data(filename, train_test_split=0.8, random_seed=None, return_datas
     
     return train_data, test_data, split
 
-def get_data_loaders(filename, batch_size=32, train_test_split=0.8, random_seed=None):
+def get_data_loaders(filename, batch_size=32, train_test_split=0.8, random_seed=None, split_indices=False):
     """
     Load data and create DataLoaders for training and testing
     
@@ -64,7 +64,6 @@ def get_data_loaders(filename, batch_size=32, train_test_split=0.8, random_seed=
     Returns:
         train_loader, test_loader: DataLoader objects
     """
-    # Get datasets
     train_dataset, test_dataset, split_indices = training_data(
         filename, 
         train_test_split=train_test_split,
@@ -86,10 +85,3 @@ def get_data_loaders(filename, batch_size=32, train_test_split=0.8, random_seed=
     )
     
     return train_loader, test_loader, split_indices
-
-def testing_data(filename, indices):
-    """Load specific data samples by indices"""
-    data = torch.load(filename)
-    selected_data_input = [data[i][0] for i in indices]
-    selected_data_target = [data[i][1] for i in indices]
-    return selected_data_input, selected_data_target
