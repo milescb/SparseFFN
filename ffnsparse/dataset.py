@@ -51,7 +51,7 @@ def training_data(filename, train_test_split=0.8, random_seed=None, return_datas
     
     return train_data, test_data, split
 
-def get_data_loaders(filename, batch_size=32, train_test_split=0.8, random_seed=None, split_indices=False):
+def get_data_loaders(filename, batch_size=32, train_test_split=0.8, random_seed=None, split_indices=False, **kwargs):
     """
     Load data and create DataLoaders for training and testing
     
@@ -75,13 +75,15 @@ def get_data_loaders(filename, batch_size=32, train_test_split=0.8, random_seed=
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        shuffle=True
+        shuffle=True,
+        **kwargs
     )
     
     test_loader = DataLoader(
         test_dataset,
         batch_size=batch_size, 
-        shuffle=False
+        shuffle=False,
+        **kwargs
     )
     
     return train_loader, test_loader, split_indices

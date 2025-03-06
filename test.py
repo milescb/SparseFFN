@@ -31,8 +31,20 @@ def main():
     hidden_sizes = checkpoint['hidden_sizes']
     output_size = checkpoint['output_size']
     batch_size = checkpoint['batch_size']
+    learning_rate = checkpoint['learning_rate']
     
-    train_loader, test_loader, split_indices = get_data_loaders(args.data, batch_size=batch_size, train_test_split=0.8)
+    print("Hyperparameters and network shape: ")
+    print(f"Input size: {input_size}")
+    print(f"Hidden sizes: {hidden_sizes}")
+    print(f"Output size: {output_size}")
+    print(f"Batch size: {batch_size}")
+    print(f"Learning rate: {learning_rate}")
+    
+    train_loader, test_loader, split_indices = get_data_loaders(args.data, 
+                                                                batch_size=batch_size, 
+                                                                train_test_split=0.8,
+                                                                num_workers=4,
+                                                                pin_memory=True)
     
     model = DenseNN(
         input_size=input_size,
@@ -49,12 +61,12 @@ def main():
                                         xlabel='Value', ylabel='Frequency', labels=['Predictions', 'Targets'],
                                         save='plots/comparison_single_layer_ratio.png', histtype='step')
     
-    concat_predictions = np.concatenate(predictions, axis=0)
-    concat_targets = np.concatenate(targets, axis=0)
-    compare_distributions(concat_predictions, concat_targets, save='plots/comparison_all_layers.png', xlim=(-0.25, 0.25))
-    plot_multiple_histograms_with_ratio([concat_predictions, concat_targets], bins=25, range=(-0.25, 0.25),
-                                        xlabel='Value', ylabel='Frequency', labels=['Predictions', 'Targets'],
-                                        save='plots/comparison_all_layers_ratio.png', histtype='step')
+    # concat_predictions = np.concatenate(predictions, axis=0)
+    # concat_targets = np.concatenate(targets, axis=0)
+    # compare_distributions(concat_predictions, concat_targets, save='plots/comparison_all_layers.png', xlim=(-0.25, 0.25))
+    # plot_multiple_histograms_with_ratio([concat_predictions, concat_targets], bins=25, range=(-0.25, 0.25),
+    #                                     xlabel='Value', ylabel='Frequency', labels=['Predictions', 'Targets'],
+    #                                     save='plots/comparison_all_layers_ratio.png', histtype='step')
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -62,7 +74,7 @@ if __name__ == '__main__':
                         default="trained_models/model.pt", 
                         help='Path to saved model')
     parser.add_argument('--data', type=str, 
-                        default="/mnt/storage/spffn/training_data/processed_data_layer2.pt", 
+                        default="/mnt/storage/spffn/training_data/bylayer/layer_2.pt", 
                         help='Path to dataset')
     args = parser.parse_args()
     
